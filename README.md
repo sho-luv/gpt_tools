@@ -4,10 +4,10 @@ A collection of tools created with the help of ChatGPT - a powerful language mod
 
 ## Tools
 
-- `wifiPeeker`: A tool for extracting Wi-Fi SSIDs and pre-shared keys from Android devices.
-- `lsaPeeker`: A tool for parsing the output of `crackmapexec --lsa` to find any cleartext passwords.
 - `androkey`: A tool for dumping android WiFi SSIDs and the corresponding cleartext key material.
 - `checknull`: A tool for checking null sessions on domain controllers and dumping usernames.
+- `lsaPeeker`: A tool for parsing the output of `crackmapexec --lsa` to find any cleartext passwords.
+- `parallelHostResolve`: A tool to resolve hostnames in parallel for speed.
 
 
 ## Usage
