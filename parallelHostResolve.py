@@ -1,4 +1,11 @@
 #!/usr/bin/env python
+# coding: utf-8
+#
+# By Leon Johnson - twitter.com/sho_luv
+#
+# This program resolves hostnames in parallel, 
+# using multiple threads to improve performance.
+
 
 import argparse
 import socket
