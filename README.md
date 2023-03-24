@@ -14,11 +14,11 @@ A collection of tools created with the help of ChatGPT - a powerful language mod
 
 To use any of the tools in this repository, simply clone the repository to your local machine and run the tool's Python script.
 
-For example, to use `wifiPeeker`:
+For example, to use `androkey`:
 
-1. Clone the `gpt_tools` repository: `git clone https://github.com/<username>/gpt_tools.git`
-2. Navigate to the `wifiPeeker` directory: `cd gpt_tools/wifiPeeker`
-3. Run the Python script: `python wifiPeeker.py`
+1. Clone the `gpt_tools` repository: `git clone https://github.com/sho-luv/gpt_tools.git`
+2. Connect rooted Android device.
+2. Run the Python script: `python androkey.py`
 
 ## Contributions
 
