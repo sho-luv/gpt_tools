@@ -8,6 +8,7 @@ A collection of tools created with the help of ChatGPT - a powerful language mod
 - `checknull`: A tool for checking null sessions on domain controllers and dumping usernames.
 - `lsaPeeker`: A tool for parsing the output of `crackmapexec --lsa` to find any cleartext passwords.
 - `parallelHostResolve`: A tool to resolve hostnames in parallel for speed.
+- `ftp_check.py`: A tool to check for anonymous FTP and can list their contents.
 
 
 ## Usage
