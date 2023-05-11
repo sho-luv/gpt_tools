@@ -2,14 +2,13 @@
 # -*- coding: utf-8 -*-
 #
 # By Leon Johnson - twitter.com/sho_luv
-# 
+#
 # This code is a conversion of Brandon Fisher's code
 # converted to a standalone project with the help of chatGPT
 # to identify domain trusts.
 
-
-
 import argparse
+import socket
 from getpass import getpass
 from impacket.ldap import ldapasn1 as ldapasn1_impacket
 from impacket.ldap import ldap as ldap_impacket
@@ -17,9 +16,21 @@ from impacket.ldap import ldap as ldap_impacket
 def parse_args():
     parser = argparse.ArgumentParser(description="Extract all Trust Relationships and Trusting Direction")
     parser.add_argument('account', action='store', help='[domain/]username[:password] Account used to authenticate to DC.')
+    parser.add_argument('--resolve-ip', action='store_true', help='Resolve and save IP addresses of each domain.')
     return parser.parse_args()
 
-def main(account):
+def resolve_ip(domain):
+    try:
+        return socket.gethostbyname(domain)
+    except socket.gaierror:
+        return None
+
+def save_ip(domain, ip):
+    if ip is not None:
+        with open(f"{domain}.txt", "w") as f:
+            f.write(ip)
+
+def main(account, resolve_ip_flag):
     # Assuming the format of 'account' argument is domain/username:password
     domain, account = account.split('/')
     username, password = account.split(':')
@@ -79,10 +90,14 @@ def main(account):
         print('Found the following trust relationships:')
         for trust in trusts:
             print('{} -> {}'.format(trust[1], trust[2]))
+            if resolve_ip_flag:
+                ip = resolve_ip(trust[1])
+                print('Resolved IP for {}: {}'.format(trust[1], ip))
+                save_ip(trust[1], ip)
     else:
         print('No trust relationships found')
 
 if __name__ == "__main__":
     args = parse_args()
-    main(args.account)
+    main(args.account, args.resolve_ip)
 
