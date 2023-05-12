@@ -9,7 +9,9 @@
 
 import argparse
 import socket
+import shutil
 from getpass import getpass
+from termcolor import colored
 from impacket.ldap import ldapasn1 as ldapasn1_impacket
 from impacket.ldap import ldap as ldap_impacket
 
@@ -61,7 +63,8 @@ def main(account, resolve_ip_flag):
             return
 
     trusts = []
-    print('Total of records returned {}'.format(len(resp)))
+    print('Total of records returned {}'.format(colored(str(len(resp)), 'yellow')))
+
     for item in resp:
         if isinstance(item, ldapasn1_impacket.SearchResultEntry) is not True:
             continue
@@ -86,18 +89,33 @@ def main(account, resolve_ip_flag):
         except Exception as e:
             print('Cannot process trust relationship due to error {}'.format(str(e)))
 
+    # Get terminal width
+    term_width = shutil.get_terminal_size()[0]
+    term_width = 70
+
     if len(trusts) > 0:
-        print('Found the following trust relationships:')
+        print(colored('The {} domain has the following trust relationships:'.format(colored(domain, 'yellow'))))
         for trust in trusts:
-            print('{} -> {}'.format(trust[1], trust[2]))
-            if resolve_ip_flag:
-                ip = resolve_ip(trust[1])
-                print('Resolved IP for {}: {}'.format(trust[1], ip))
-                save_ip(trust[1], ip)
+            # Calculate arrow length
+            arrow_len = term_width - len(trust[1]) - len(trust[2]) - 6
+            if arrow_len > 0:  # Check if space for arrow exists
+                arrow = '-' * arrow_len
+                print('{} {}> {}'.format(colored(trust[1], 'blue'), arrow, colored(trust[2], 'red')))
+                if resolve_ip_flag:
+                    ip = resolve_ip(trust[1])
+                    print('Resolved IP for {}: {}'.format(colored(trust[1], 'blue'), ip))
+                    save_ip(trust[1], ip)
+            else:  # If not enough space for arrow, print normally
+                print('{} -> {}'.format(colored(trust[1], 'blue'), colored(trust[2], 'red')))
+                if resolve_ip_flag:
+                    ip = resolve_ip(trust[1])
+                    print('Resolved IP for {}: {}'.format(colored(trust[1], 'blue'), ip))
+                    save_ip(trust[1], ip)
     else:
-        print('No trust relationships found')
+        print(colored('No trust relationships found', 'red'))
 
 if __name__ == "__main__":
     args = parse_args()
     main(args.account, args.resolve_ip)
+
 
