@@ -1,38 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-#
-# By Leon Johnson - twitter.com/sho_luv
-#
-# This code is a conversion of Brandon Fisher's code
-# converted to a standalone project with the help of chatGPT
-# to identify domain trusts.
 
 import argparse
-import socket
-import shutil
 from getpass import getpass
-from termcolor import colored
 from impacket.ldap import ldapasn1 as ldapasn1_impacket
 from impacket.ldap import ldap as ldap_impacket
 
 def parse_args():
     parser = argparse.ArgumentParser(description="Extract all Trust Relationships and Trusting Direction")
     parser.add_argument('account', action='store', help='[domain/]username[:password] Account used to authenticate to DC.')
-    parser.add_argument('--resolve-ip', action='store_true', help='Resolve and save IP addresses of each domain.')
     return parser.parse_args()
 
-def resolve_ip(domain):
-    try:
-        return socket.gethostbyname(domain)
-    except socket.gaierror:
-        return None
-
-def save_ip(domain, ip):
-    if ip is not None:
-        with open(f"{domain}.txt", "w") as f:
-            f.write(ip)
-
-def main(account, resolve_ip_flag):
+def main(account):
     # Assuming the format of 'account' argument is domain/username:password
     domain, account = account.split('/')
     username, password = account.split(':')
@@ -63,8 +42,7 @@ def main(account, resolve_ip_flag):
             return
 
     trusts = []
-    print('Total of records returned {}'.format(colored(str(len(resp)), 'yellow')))
-
+    print('Total of records returned {}'.format(len(resp)))
     for item in resp:
         if isinstance(item, ldapasn1_impacket.SearchResultEntry) is not True:
             continue
@@ -89,33 +67,14 @@ def main(account, resolve_ip_flag):
         except Exception as e:
             print('Cannot process trust relationship due to error {}'.format(str(e)))
 
-    # Get terminal width
-    term_width = shutil.get_terminal_size()[0]
-    term_width = 70
-
     if len(trusts) > 0:
-        print(colored('The {} domain has the following trust relationships:'.format(colored(domain, 'yellow'))))
+        print('Found the following trust relationships:')
         for trust in trusts:
-            # Calculate arrow length
-            arrow_len = term_width - len(trust[1]) - len(trust[2]) - 6
-            if arrow_len > 0:  # Check if space for arrow exists
-                arrow = '-' * arrow_len
-                print('{} {}> {}'.format(colored(trust[1], 'blue'), arrow, colored(trust[2], 'red')))
-                if resolve_ip_flag:
-                    ip = resolve_ip(trust[1])
-                    print('Resolved IP for {}: {}'.format(colored(trust[1], 'blue'), ip))
-                    save_ip(trust[1], ip)
-            else:  # If not enough space for arrow, print normally
-                print('{} -> {}'.format(colored(trust[1], 'blue'), colored(trust[2], 'red')))
-                if resolve_ip_flag:
-                    ip = resolve_ip(trust[1])
-                    print('Resolved IP for {}: {}'.format(colored(trust[1], 'blue'), ip))
-                    save_ip(trust[1], ip)
+            print('{} -> {}'.format(trust[1], trust[2]))
     else:
-        print(colored('No trust relationships found', 'red'))
+        print('No trust relationships found')
 
 if __name__ == "__main__":
     args = parse_args()
-    main(args.account, args.resolve_ip)
-
+    main(args.account)
 
