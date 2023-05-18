@@ -119,7 +119,7 @@ def main():
 
     args = parser.parse_args()
 
-    target - args.target
+    target = args.target
 
     services = {
         'smb': '445',
