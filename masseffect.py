@@ -1,0 +1,154 @@
+#!/usr/bin/env python
+# coding: utf-8
+# 
+# By Leon Johnson - twitter.com/sho_luv
+#
+# This program takes a file of IP addresses and scans
+# them using masscan one port at a time to create files
+# named after the service that was scanned. 
+# I'm porting overe my mass-effect.sh to python
+# https://github.com/sho-luv/mass-effect
+
+
+import argparse
+import subprocess
+import os
+import sys
+
+# ANSI color codes
+RED = "\033[1;31m"
+GREEN = "\033[0;32m"
+YELLOW = "\033[0;33m"
+BLUE = "\033[1;34m"
+MAGENTA = "\033[1;35m"
+CYAN = "\033[0;36m"
+RESET = "\033[0m"
+
+def run_masscan(service, ports, input_file, exclude_file, rate):
+    print(f"{CYAN}Running masscan on {service} (ports: {ports}){RESET}")
+    
+    # Define the iptables rules
+    iptables_rule = ["iptables", "-A", "INPUT", "-p", "tcp", "--dport", "60000", "-j", "DROP"]
+
+    try:
+        # If service is 'http', update iptables before masscan
+        if service == 'http':
+            print(" ".join(iptables_rule))
+            subprocess.run(iptables_rule)
+
+        # start building the command line
+        cmd = ["masscan", "--open", "-p", ports, "-iL", input_file]
+
+        if service == 'http':
+            cmd.extend(["--source-port", "60000"])
+        
+        if exclude_file:
+            cmd.extend(["--excludefile", exclude_file])
+
+        # Only add --banners if service is http
+        if service == 'http':
+            cmd.extend(["--banners"])
+
+        cmd.extend(["-oB", service])
+
+        # Add --rate and value only if rate is provided
+        if rate is not None:
+            cmd.extend(["--rate", str(rate)])
+
+        # execute the masscan command
+        print(" ".join(cmd))
+        subprocess.run(cmd)
+
+        if service == 'http':
+            # read the scan result
+            readscan_cmd = ["masscan", "--readscan", service, "-oX", f"{service}.xml"]
+            output = subprocess.run(readscan_cmd, capture_output=True, text=True)
+
+            # Remove the iptables rule after masscan for http service
+            iptables_rule[1] = "-D"  # Change -A (append) to -D (delete)
+            print(" ".join(iptables_rule))
+            subprocess.run(iptables_rule)
+            
+    except FileNotFoundError:
+        print(f"{RED}masscan not found. Please install masscan and try again.{RESET}")
+        sys.exit(1)
+
+    # Only create a text file if output.stdout is not empty and service is 'http'
+    if service == 'http' and output.stdout.strip():
+        with open(f"{service}.txt", 'w') as f:
+            for line in output.stdout.split('\n'):
+                if line.strip():
+                    f.write(line.split(' ')[5] + '\n')
+
+
+banner = """
+
+ ███    ███  █████  ███████ ███████       ███████ ███████ ███████ ███████  ██████ ████████ 
+ ████  ████ ██   ██ ██      ██            ██      ██      ██      ██      ██         ██    
+ ██ ████ ██ ███████ ███████ ███████ █████ █████   █████   █████   █████   ██         ██ 
+ ██  ██  ██ ██   ██      ██      ██       ██      ██      ██      ██      ██         ██ 
+ ██      ██ ██   ██ ███████ ███████       ███████ ██      ██      ███████  ██████    ██ 
+                                                                                               
+
+                $BWhite Port Scanner For Things I Like To Hack$Off | $BYellow@sho_luv$Off
+"""
+
+from termcolor import colored
+
+
+def print_banner():
+    print(f"{YELLOW}##############################################")
+    print(f"#                                            #")
+    print(f"#          Masscan Automation Script         #")
+    print(f"#                                            #")
+    print(f"##############################################{RESET}")
+
+def main():
+    print_banner()
+
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-f', '--file', required=True, help='File of IP addresses to be scanned')
+    parser.add_argument('-r', '--rate', default='', help='Rate to scan')
+    parser.add_argument('-e', '--exclude', default='', help='File of IPs to be excluded from scan')
+
+    args = parser.parse_args()
+
+    if not os.path.isfile(args.file):
+        print(f"{RED}ERROR: File \"{args.file}\" does not exist!{RESET}")
+        exit(1)
+
+    services = {
+        'smb': '445',
+        'http': '80,443,8080,8081',
+        'snmp': 'U:161',
+        'ike': 'U:500',
+        'ipmi': 'U:623',
+        'ftp': '21',
+        'ssh': '22',
+        'nfs': '111',
+        'rlogin': '513',
+        'ghost_cat': '8009',
+        'java-rmi': '1099',
+        'mssql': '1433',
+        'oracle': '1521',
+        'jdwp': '2010,8000,9999',
+        'rdp': '3389',
+        'erlang': '4369',
+        'siet': '4786',
+        'vnc': '5900',
+        'couchdb': '5984',
+        'winrm': '5985,5986',
+        'x11': '6000-6005',
+        'redis': '6379',
+        'weblogic': '7001'
+        # Add more services here
+    }
+
+    exclude = f"--excludefile {args.exclude}" if args.exclude else ""
+
+    for service, ports in services.items():
+        run_masscan(service, ports, args.file, exclude, args.rate)
+
+if __name__ == "__main__":
+    main()
+
