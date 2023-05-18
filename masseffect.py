@@ -119,9 +119,7 @@ def main():
 
     args = parser.parse_args()
 
-    if not os.path.isfile(args.target):
-        print(f"{RED}ERROR: File \"{args.target}\" does not exist!{RESET}")
-        exit(1)
+    target - args.target
 
     services = {
         'smb': '445',
