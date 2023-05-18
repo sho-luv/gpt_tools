@@ -24,20 +24,23 @@ MAGENTA = "\033[1;35m"
 CYAN = "\033[0;36m"
 RESET = "\033[0m"
 
+import os
+
 def run_masscan(service, ports, target, exclude_file, rate):
     print(f"{CYAN}Running masscan on {service} (ports: {ports}){RESET}")
 
     # Define the iptables rules
     iptables_rule = ["iptables", "-A", "INPUT", "-p", "tcp", "--dport", "60000", "-j", "DROP"]
 
+    output_dir = "masseffect_output"
+    os.makedirs(output_dir, exist_ok=True)
+
     try:
         if service == 'http':
             print(" ".join(iptables_rule))
             subprocess.run(iptables_rule)
 
-        # Start building the command line
         cmd = ["masscan", "--open", "-p", ports]
-        # Conditionally add '-iL' for file input
         if os.path.isfile(target):
             cmd.extend(["-iL", target])
         else:
@@ -45,14 +48,14 @@ def run_masscan(service, ports, target, exclude_file, rate):
 
         if service == 'http':
             cmd.extend(["--source-port", "60000"])
-        
+
         if exclude_file:
             cmd.extend(["--excludefile", exclude_file])
 
         if service == 'http':
             cmd.extend(["--banners"])
 
-        cmd.extend(["-oB", service])
+        cmd.extend(["-oB", os.path.join(output_dir, service)])
 
         if rate is not None:
             cmd.extend(["--rate", str(rate)])
@@ -61,15 +64,14 @@ def run_masscan(service, ports, target, exclude_file, rate):
         subprocess.run(cmd)
 
         if service == 'http':
-            readscan_cmd = ["masscan", "--readscan", service, "-oX", f"{service}.xml"]
+            readscan_cmd = ["masscan", "--readscan", service, "-oX", os.path.join(output_dir, f"{service}.xml")]
             output = subprocess.run(readscan_cmd, capture_output=True, text=True)
 
             iptables_rule[1] = "-D"
             print(" ".join(iptables_rule))
             subprocess.run(iptables_rule)
 
-        # Check if the output file exists and is empty, if so, delete it
-        output_file = f"{service}.txt"
+        output_file = os.path.join(output_dir, f"{service}.txt")
         if os.path.exists(output_file) and os.path.getsize(output_file) == 0:
             os.remove(output_file)
             
@@ -78,7 +80,7 @@ def run_masscan(service, ports, target, exclude_file, rate):
         sys.exit(1)
 
     if service == 'http' and output.stdout.strip():
-        with open(f"{service}.txt", 'w') as f:
+        with open(os.path.join(output_dir, f"{service}.txt"), 'w') as f:
             for line in output.stdout.split('\n'):
                 if line.strip():
                     f.write(line.split(' ')[5] + '\n')
