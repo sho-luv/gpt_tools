@@ -67,6 +67,11 @@ def run_masscan(service, ports, target, exclude_file, rate):
             iptables_rule[1] = "-D"
             print(" ".join(iptables_rule))
             subprocess.run(iptables_rule)
+
+        # Check if the output file exists and is empty, if so, delete it
+        output_file = f"{service}.txt"
+        if os.path.exists(output_file) and os.path.getsize(output_file) == 0:
+            os.remove(output_file)
             
     except FileNotFoundError:
         print(f"{RED}masscan not found. Please install masscan and try again.{RESET}")
