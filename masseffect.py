@@ -112,7 +112,9 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('-t', '--target', required=True,
                         help='IP address or file of IP addresses to be scanned')
-    parser.add_argument('-r', '--rate', default='', help='Rate to scan')
+    parser.add_argument('-r', '--rate', default='100', 
+                        help='Rate to scan (default is 100 packets per second)')
+
     parser.add_argument('-e', '--exclude', default='', help='File of IPs to be excluded from scan')
 
     args = parser.parse_args()
