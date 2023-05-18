@@ -24,20 +24,24 @@ MAGENTA = "\033[1;35m"
 CYAN = "\033[0;36m"
 RESET = "\033[0m"
 
-def run_masscan(service, ports, input_file, exclude_file, rate):
+def run_masscan(service, ports, target, exclude_file, rate):
     print(f"{CYAN}Running masscan on {service} (ports: {ports}){RESET}")
-    
+
     # Define the iptables rules
     iptables_rule = ["iptables", "-A", "INPUT", "-p", "tcp", "--dport", "60000", "-j", "DROP"]
 
     try:
-        # If service is 'http', update iptables before masscan
         if service == 'http':
             print(" ".join(iptables_rule))
             subprocess.run(iptables_rule)
 
-        # start building the command line
-        cmd = ["masscan", "--open", "-p", ports, "-iL", input_file]
+        # Start building the command line
+        cmd = ["masscan", "--open", "-p", ports]
+        # Conditionally add '-iL' for file input
+        if os.path.isfile(target):
+            cmd.extend(["-iL", target])
+        else:
+            cmd.append(target)
 
         if service == 'http':
             cmd.extend(["--source-port", "60000"])
@@ -45,27 +49,22 @@ def run_masscan(service, ports, input_file, exclude_file, rate):
         if exclude_file:
             cmd.extend(["--excludefile", exclude_file])
 
-        # Only add --banners if service is http
         if service == 'http':
             cmd.extend(["--banners"])
 
         cmd.extend(["-oB", service])
 
-        # Add --rate and value only if rate is provided
         if rate is not None:
             cmd.extend(["--rate", str(rate)])
 
-        # execute the masscan command
         print(" ".join(cmd))
         subprocess.run(cmd)
 
         if service == 'http':
-            # read the scan result
             readscan_cmd = ["masscan", "--readscan", service, "-oX", f"{service}.xml"]
             output = subprocess.run(readscan_cmd, capture_output=True, text=True)
 
-            # Remove the iptables rule after masscan for http service
-            iptables_rule[1] = "-D"  # Change -A (append) to -D (delete)
+            iptables_rule[1] = "-D"
             print(" ".join(iptables_rule))
             subprocess.run(iptables_rule)
             
@@ -73,7 +72,6 @@ def run_masscan(service, ports, input_file, exclude_file, rate):
         print(f"{RED}masscan not found. Please install masscan and try again.{RESET}")
         sys.exit(1)
 
-    # Only create a text file if output.stdout is not empty and service is 'http'
     if service == 'http' and output.stdout.strip():
         with open(f"{service}.txt", 'w') as f:
             for line in output.stdout.split('\n'):
@@ -107,14 +105,15 @@ def main():
     print_banner()
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('-f', '--file', required=True, help='File of IP addresses to be scanned')
+    parser.add_argument('-t', '--target', required=True,
+                        help='IP address or file of IP addresses to be scanned')
     parser.add_argument('-r', '--rate', default='', help='Rate to scan')
     parser.add_argument('-e', '--exclude', default='', help='File of IPs to be excluded from scan')
 
     args = parser.parse_args()
 
-    if not os.path.isfile(args.file):
-        print(f"{RED}ERROR: File \"{args.file}\" does not exist!{RESET}")
+    if not os.path.isfile(args.target):
+        print(f"{RED}ERROR: File \"{args.target}\" does not exist!{RESET}")
         exit(1)
 
     services = {
@@ -147,7 +146,7 @@ def main():
     exclude = f"--excludefile {args.exclude}" if args.exclude else ""
 
     for service, ports in services.items():
-        run_masscan(service, ports, args.file, exclude, args.rate)
+        run_masscan(service, ports, target, exclude, args.rate)
 
 if __name__ == "__main__":
     main()
