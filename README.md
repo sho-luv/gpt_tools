@@ -3,13 +3,17 @@
 A collection of tools created with the help of ChatGPT - a powerful language model developed by OpenAI.
 
 ## Tools
-
-- `androkey`: A tool for dumping android WiFi SSIDs and the corresponding cleartext key material.
-- `checknull`: A tool for checking null sessions on domain controllers and dumping usernames.
-- `lsaPeeker`: A tool for parsing the output of `crackmapexec --lsa` to find any cleartext passwords.
-- `parallelHostResolve`: A tool to resolve hostnames in parallel for speed.
-- `ftp_check.py`: A tool to check for anonymous FTP and can list their contents.
-- `get_urls.py`: A tool to extract http urls from masscan xml files
+- androkey: A tool for dumping Android WiFi SSIDs and the corresponding cleartext key material.
+- check_null: A tool for checking null sessions on domain controllers and dumping usernames.
+- lsaPeeker: A tool for parsing the output of crackmapexec --lsa to find any cleartext passwords.
+- parallelHostResolve: A tool to resolve hostnames in parallel for speed.
+- ftp_check.py: A tool to check for anonymous FTP and list their contents.
+- get_urls.py: A tool to extract HTTP URLs from masscan XML files.
+- Host_Resolver.py : A multithreaded tool to resolve multiple hostnames. (Corrected the typo in 'multiple')
+- easy_scope.py : A tool to convert files of IPs to CIDR notation or vice versa.
+- mass_effect.py : Python port of the mass-effect.py tool.
+- rc4_check.py : A tool to check if RC4 is enabled on Windows hosts.
+- trusts.py : A tool to enumerate domain trusts.
 
 
 ## Usage
