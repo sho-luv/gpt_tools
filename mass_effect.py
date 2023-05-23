@@ -71,6 +71,18 @@ def run_masscan(service, ports, target, exclude_file, rate):
             print(" ".join(iptables_rule))
             subprocess.run(iptables_rule)
 
+        # check if only one port being scanned if so print out service.txt file
+        if ',' not in ports:
+            readscan_cmd = ["masscan", "--readscan", os.path.join(output_dir, service), os.path.join(output_dir, f"{service}.txt")]
+            output = subprocess.run(readscan_cmd, capture_output=True, text=True)
+            if output.stdout.strip():
+                ip_addresses = [line.split(' ')[5] for line in output.stdout.split('\n') if line.strip()]
+
+                # Now write ip_addresses to a file
+                with open(os.path.join(output_dir, f"{service}_ips.txt"), 'w') as f:
+                    for ip in ip_addresses:
+                        f.write(f"{ip}\n")
+
         # get all files in the directory
         for file_name in os.listdir(output_dir):
             output_file = os.path.join(output_dir, file_name)
