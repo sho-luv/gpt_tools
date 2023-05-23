@@ -71,9 +71,12 @@ def run_masscan(service, ports, target, exclude_file, rate):
             print(" ".join(iptables_rule))
             subprocess.run(iptables_rule)
 
-        output_file = os.path.join(output_dir, f"{service}.txt")
-        if os.path.exists(output_file) and os.path.getsize(output_file) == 0:
-            os.remove(output_file)
+        # get all files in the directory
+        for file_name in os.listdir(output_dir):
+            output_file = os.path.join(output_dir, file_name)
+            if os.path.exists(output_file) and os.path.getsize(output_file) == 0:
+                os.remove(output_file)
+
             
     except FileNotFoundError:
         print(f"{RED}masscan not found. Please install masscan and try again.{RESET}")
@@ -146,7 +149,19 @@ def main():
         'winrm': '5985,5986',
         'x11': '6000-6005',
         'redis': '6379',
-        'weblogic': '7001'
+        'weblogic': '7001',
+        'manage_engine':'8383,8400',
+        'intel-amt':'16992,16993,5900,623,664',
+        'iscsi':'860,3205,3260',
+        'hi-lo':'17988',
+        'rabbitmq':'25672',
+        'mongodb':'27017',
+        'ldap':'389',
+        'ldaps':'636',
+        'lantronix':'9999,30718',
+        'sap':'8000,50000,50013',
+        'iSCSI':'3260',
+        'track-it':'9010'
         # Add more services here
     }
 
