@@ -64,7 +64,7 @@ def run_masscan(service, ports, target, exclude_file, rate):
         subprocess.run(cmd)
 
         if service == 'http':
-            readscan_cmd = ["masscan", "--readscan", service, "-oX", os.path.join(output_dir, f"{service}.xml")]
+            readscan_cmd = ["masscan", "--readscan", os.path.join(output_dir, service), "-oX", os.path.join(output_dir, f"{service}.xml")]
             output = subprocess.run(readscan_cmd, capture_output=True, text=True)
 
             iptables_rule[1] = "-D"
