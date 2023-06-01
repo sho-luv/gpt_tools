@@ -1,8 +1,15 @@
 #!/usr/bin/python
+import sys
 import argparse
 from impacket.smbconnection import SMBConnection
 from termcolor import colored
 from subprocess import Popen, PIPE
+
+# TODO:
+# lsaquery
+# dsroledominfo
+# getusername
+# enumprivs
 
 def check_null_session(ip):
     try:
@@ -23,10 +30,32 @@ def list_users(ip):
     return output.decode()
 
 def main():
+    # Create colored text variables
+    description = colored("Check Domain Controllers For Null Sessions", "white", attrs=["bold"])
+    tool_by = colored("Penetration Testing Tool by Leon Johnson aka", "white", attrs=["bold"])
+    handle = colored("@sho_luv", "yellow", attrs=["bold"])
+
+    # Combine colored text variables into banner
+    banner = """
+   _______ _     _ _______ _______ _     _      __   _ _     _              
+   |       |_____| |______ |       |____/       | \  | |     | |      |     
+   |_____  |     | |______ |_____  |    \_      |  \_| |_____| |_____ |_____
+                                                                          
+                 {}
+              {} {}
+       """.format(description, tool_by, handle)
+
+
     parser = argparse.ArgumentParser()
     parser.add_argument('input', help='IP address or path to a file containing IP addresses (one per line)')
     parser.add_argument('-l', '--list', action='store_true', help='List users of the given IP or IPs')
     parser.add_argument('-f', '--file', help='Output file')
+
+    if len(sys.argv)==1:
+        print( banner )
+        parser.print_help()
+        sys.exit(1)
+
     args = parser.parse_args()
 
     ips = []
