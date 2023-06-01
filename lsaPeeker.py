@@ -34,6 +34,13 @@ def main():
         r"\(SMBv1:",
         r"STATUS_NOT_SUPPORTED",
         r":0x",
+        r"STATUS_NETLOGON_NOT_STARTED",
+        r"STATUS_LOGON_FAILURE",
+        r"STATUS_NO_LOGON_SERVERS",
+        r"smb3.py",
+        r"RasDialParams",
+        r"RasConnectionCredentials",
+        r"Security Questions for user",
     ]
 
     parser = argparse.ArgumentParser(description='Process input file.')
