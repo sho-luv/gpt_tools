@@ -26,10 +26,6 @@ For example, to use `androkey`:
 2. Connect rooted Android device.
 2. Run the Python script: `python androkey.py`
 
-## Contributions
-
-Contributions to this repository are welcome! If you have a tool you've created with the help of ChatGPT that you'd like to add to this repository, please submit a pull request.
-
 ## License
 
 This repository is licensed under the [MIT License](https://opensource.org/licenses/MIT).
