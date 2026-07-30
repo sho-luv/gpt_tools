@@ -29,7 +29,6 @@ from goldengmsa_crypto import (
     ManagedPasswordId,
     RootKey,
     compute_gmsa_password,
-    post_process_password_buffer,
 )
 from goldengmsa_kdsinfo_cli import kdsinfo
 from goldengmsa_ldap import Credentials, DirectorySession
@@ -138,8 +137,7 @@ def compute(
     except (BlobParseError, LDAPSessionError, LookupError, ValueError) as error:
         raise typer.BadParameter(str(error)) from error
 
-    managed_password = post_process_password_buffer(password)
-    nt_hash = MD4.new(managed_password[:-2]).hexdigest()
+    nt_hash = MD4.new(password).hexdigest()
     console.print(f"NT Hash:\t\t{nt_hash}")
     console.print(f"NT Hash (LM:NT):\taad3b435b51404eeaad3b435b51404ee:{nt_hash}")
     console.print(
