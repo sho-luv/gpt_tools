@@ -14,6 +14,8 @@ A collection of tools created with the help of ChatGPT - a powerful language mod
 - `mass_effect.py` : Python port of the mass-effect.py tool.
 - `rc4_check.py` : A tool to check if RC4 is enabled on Windows hosts.
 - `trusts.py` : A tool to enumerate domain trusts.
+- `goldengmsa.py`: A cross-platform Impacket tool for enumerating gMSAs,
+  retrieving KDS root keys, and computing gMSA credentials on macOS or Linux.
 
 
 ## Usage
