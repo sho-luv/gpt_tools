@@ -87,11 +87,11 @@ def _print_reader_sets(
                 "./goldengmsa.py",
                 "kdsinfo",
                 auth_target,
-                "-hashes",
-                ":<NTHASH>",
                 "--guid",
                 reader_set.target,
                 "--show-secrets",
+                "-hashes",
+                ":<NTHASH>",
             ],
         )
         console.print(f"  {command}", soft_wrap=True)
